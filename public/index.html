@@ -1,43 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-
   <title>Animal Tracker</title>
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       margin: 0;
     }
-
     #map {
       height: 100vh;
       width: 100%;
     }
   </style>
-
 </head>
 <body>
 
 <div id="map"></div>
 
 <script src="/socket.io/socket.io.js"></script>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-
   // =====================
   // Conectar Socket.IO
   // =====================
   const socket = io();
 
   // =====================
-  // Crear mapa
+  // Crear mapa (Centrado inicialmente en Oaxaca)
   // =====================
   const map = L.map("map").setView([17.111401, -96.757278], 16);
 
@@ -52,48 +42,59 @@
   ).addTo(map);
 
   // =====================
-  // Crear marcador
+  // Variables globales de la ruta
+  // =====================
+  const routePoints = [];
+  let lastPoint = null; 
+
+  // =====================
+  // Crear marcador y línea de ruta
   // =====================
   const marker = L.marker([17.111401, -96.757278]).addTo(map);
-  const routePoints = [];
   const routeLine = L.polyline(routePoints, {
-  color: "red",
-  weight: 4
-}).addTo(map);
+    color: "red",
+    weight: 4
+  }).addTo(map);
 
   // =====================
   // Recibir GPS
   // =====================
   socket.on("gps-update", (data) => {
+    console.log("Datos recibidos:", data);
 
-  console.log(data);
+    // 1. Ignorar coordenadas vacías (GPS sin señal)
+    if (data.lat === 0 || data.lng === 0) {
+      console.log("Coordenadas 0,0 - Esperando señal de satélite...");
+      return; 
+    }
 
-  const latlng = [data.lat, data.lng];
+    const latlng = [data.lat, data.lng];
+    let validPoint = true;
 
-  // =====================
-  // Mover marcador
-  // =====================
-  marker.setLatLng(latlng);
+    // 2. Filtrar saltos GPS (errores mayores a 50 metros)
+    if (lastPoint) {
+      const distance = map.distance(lastPoint, latlng);
+      
+      if (distance > 50) {
+        console.log("Salto GPS ignorado (Distancia:", distance, "m)");
+        validPoint = false;
+      }
+    }
 
-  // =====================
-  // Centrar mapa
-  // =====================
-  map.panTo(latlng);
+    // 3. Dibujar en el mapa solo si es válido
+    if (validPoint) {
+      // Mover marcador y centrar pantalla
+      marker.setLatLng(latlng);
+      map.panTo(latlng);
 
-  // =====================
-  // Agregar punto a ruta
-  // =====================
-  
-
-  routePoints.push(latlng);
-
-  // =====================
-  // Actualizar línea
-  // =====================
-  routeLine.setLatLngs(routePoints);
-
-});
-
+      // Agregar punto a la línea
+      routePoints.push(latlng);
+      routeLine.setLatLngs(routePoints);
+      
+      // Guardar el punto para compararlo la próxima vez
+      lastPoint = latlng;
+    }
+  });
 </script>
 
 </body>
