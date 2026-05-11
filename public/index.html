@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Animal Tracker</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+  // =====================
+  // Conectar Socket.IO
+  // =====================
+  const socket = io();
+
+  // =====================
+  // Crear mapa
+  // =====================
+  const map = L.map("map").setView([17.111401, -96.757278], 16);
+
+  // =====================
+  // Tiles OpenStreetMap
+  // =====================
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution: "© OpenStreetMap"
+    }
+  ).addTo(map);
+
+  // =====================
+  // Crear marcador
+  // =====================
+  const marker = L.marker([17.111401, -96.757278]).addTo(map);
+  const routePoints = [];
+  const routeLine = L.polyline(routePoints, {
+  color: "red",
+  weight: 4
+}).addTo(map);
+
+  // =====================
+  // Recibir GPS
+  // =====================
+  socket.on("gps-update", (data) => {
+
+  console.log(data);
+
+  const latlng = [data.lat, data.lng];
+
+  // =====================
+  // Mover marcador
+  // =====================
+  marker.setLatLng(latlng);
+
+  // =====================
+  // Centrar mapa
+  // =====================
+  map.panTo(latlng);
+
+  // =====================
+  // Agregar punto a ruta
+  // =====================
+  
+
+  routePoints.push(latlng);
+
+  // =====================
+  // Actualizar línea
+  // =====================
+  routeLine.setLatLngs(routePoints);
+
+});
+
+</script>
+
+</body>
+</html>
