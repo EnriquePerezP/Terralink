@@ -11,10 +11,50 @@
       height: 100vh;
       width: 100%;
     }
+    /* Diseño del Título Principal */
+    #titulo-principal {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%); /* Esto asegura que esté perfectamente centrado */
+      background: rgba(0, 0, 0, 0.8);
+      color: #00ffcc;
+      padding: 10px 40px;
+      font-family: monospace;
+      font-size: 28px;
+      font-weight: bold;
+      border-radius: 10px;
+      border: 2px solid #00ffcc; /* Un borde brillante */
+      z-index: 1000; /* Para que flote sobre el mapa */
+      letter-spacing: 4px;
+      box-shadow: 0 4px 10px rgba(0, 255, 204, 0.3); /* Un ligero resplandor cian */
+    }
+    /* Diseño del HUD Flotante */
+    #hud {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7); /* Fondo negro translúcido */
+      color: #00ffcc; /* Texto color cian tipo terminal */
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      z-index: 1000; /* Asegura que flote sobre el mapa de Leaflet */
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .hud-dato { margin: 5px 0; font-size: 14px; }
+    .hud-valor { color: white; font-weight: bold; }
   </style>
 </head>
 <body>
-
+<div id="titulo-principal">TERRALINK</div>
+<div id="hud">
+  
+  <div class="hud-dato">⏳ Última act: <span id="hud-tiempo" class="hud-valor">Esperando...</span></div>
+  <div class="hud-dato">📍 Lat: <span id="hud-lat" class="hud-valor">0.0000</span></div>
+  <div class="hud-dato">📍 Lng: <span id="hud-lng" class="hud-valor">0.0000</span></div>
+  <div class="hud-dato">📡 Señal: <span id="hud-senal" class="hud-valor">--</span></div>
+</div>
 <div id="map"></div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -68,6 +108,7 @@
       return; 
     }
 
+    // AQUÍ es donde realmente nace la variable latlng
     const latlng = [data.lat, data.lng];
     let validPoint = true;
 
@@ -81,7 +122,7 @@
       }
     }
 
-    // 3. Dibujar en el mapa solo si es válido
+    // 3. Dibujar en el mapa y actualizar HUD SOLO si es válido
     if (validPoint) {
       // Mover marcador y centrar pantalla
       marker.setLatLng(latlng);
@@ -93,6 +134,42 @@
       
       // Guardar el punto para compararlo la próxima vez
       lastPoint = latlng;
+
+      // =====================
+      // Actualizar HUD
+      // =====================
+      document.getElementById("hud-lat").innerText = latlng[0].toFixed(5);
+      document.getElementById("hud-lng").innerText = latlng[1].toFixed(5);
+      
+      // Arreglo de la hora (Forzar formato 24h estable)
+      const ahora = new Date();
+      const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      document.getElementById("hud-tiempo").innerText = ahora.toLocaleTimeString('es-MX', opcionesHora);
+
+      // =====================
+      // Arreglo de la señal (Traduciendo dBm a palabras)
+      // =====================
+      if (data.rssi !== undefined) {
+        let rssi = data.rssi;
+        let estadoSenal = "";
+
+        // Evaluamos qué tan buena es la señal
+        if (rssi >= -65) {
+          estadoSenal = "Excelente 🟢";  // Señal muy fuerte, muy cerca
+        } else if (rssi >= -85) {
+          estadoSenal = "Normal 🟡";     // Distancia media, conexión estable
+        } else if (rssi >= -105) {
+          estadoSenal = "Débil 🟠";      // Muy lejos o con muchos obstáculos
+        } else {
+          estadoSenal = "Crítica 🔴";    // A punto de perder conexión
+        }
+
+        document.getElementById("hud-senal").innerText = estadoSenal; 
+
+      } else {
+        // Si el hardware aún no manda el dato rssi, mostramos esto por defecto
+        document.getElementById("hud-senal").innerText = "Activa 🟢"; 
+      }
     }
   });
 </script>
