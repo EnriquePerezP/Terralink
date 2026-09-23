@@ -1,14 +1,34 @@
 {
-  "name": "animal-tracker",
+  "name": "terralink",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sistema de rastreo GPS en tiempo real. Lee coordenadas desde un dispositivo serial (GPS/LoRa) y las visualiza en un mapa web en vivo.",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "gps",
+    "tracking",
+    "rastreo",
+    "leaflet",
+    "socket.io",
+    "serialport",
+    "lora",
+    "iot",
+    "openstreetmap",
+    "real-time"
+  ],
+  "author": "Enrique Perez",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EnriquePerezP/Terralink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EnriquePerezP/Terralink/issues"
+  },
+  "homepage": "https://github.com/EnriquePerezP/Terralink#readme",
   "type": "commonjs",
   "dependencies": {
     "@serialport/parser-readline": "^13.0.0",
