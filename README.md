@@ -46,12 +46,12 @@ Lee coordenadas desde un dispositivo conectado por puerto serial (por ejemplo, u
 ## 🔧 Cómo funciona
 
 ```
-┌──────────────────┐      ┌───────────────────┐      ┌──────────────────┐
-│  Dispositivo GPS │      │  Servidor Node.js │      │  Navegador web   │
-│  (ESP32/Arduino  │ USB  │  Express +        │ WS   │  Leaflet +       │
+┌──────────────────┐      ┌───────────────────┐       ┌──────────────────┐
+│  Dispositivo GPS │      │  Servidor Node.js │       │  Navegador web   │
+│  (ESP32/Arduino  │ USB  │  Express +        │ WS    │  Leaflet +       │
 │   + módulo GPS)  │─────▶│  SerialPort +     │─────▶│  Socket.IO       │
-│                  │JSON  │  Socket.IO        │      │  (mapa en vivo)  │
-└──────────────────┘      └───────────────────┘      └──────────────────┘
+│                  │JSON  │  Socket.IO        │       │  (mapa en vivo)  │
+└──────────────────┘      └───────────────────┘       └──────────────────┘
 ```
 
 1. El dispositivo GPS envía coordenadas en formato **JSON por el puerto serial** (una por línea).
